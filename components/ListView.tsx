@@ -8,13 +8,22 @@ import {
   StyleSheet,
   FlatList,
 } from 'react-native'
-import { Button } from 'react-native-elements'
+import { Button, Card, ListItem } from 'react-native-elements'
 import * as SQLite from 'expo-sqlite'
 import * as FileSystem from 'expo-file-system'
 import { useForm, Controller } from 'react-hook-form'
+import Icon from '@expo/vector-icons/MaterialIcons'
 
 type KeywordData = {
   search: string
+}
+
+type ItemProps = {
+  first_name?: string
+  last_name?: string
+  date?: Date
+  affiliation?: string
+  memo?: string
 }
 
 const openDatabase = () => {
@@ -48,21 +57,29 @@ const openDatabase = () => {
 
 const db = openDatabase()
 
-const listViewItemSeparator = () => {
-  return (
+const renderItem = ({ item }: { item: ItemProps }) => (
+  <View style={{}}>
     <View
-      style={{
-        height: 1,
-        width: '100%',
-        backgroundColor: '#413C58',
-      }}
-    />
-  )
-}
+      key={item.last_name}
+      style={{ height: 64, flexDirection: 'row', alignItems: 'center' }}>
+      <ListItem.Content style={{ flex: 9, justifyContent: 'center' }}>
+        <ListItem.Title
+          style={{
+            fontSize: 24,
+          }}>{`${item.last_name} ${item.first_name}`}</ListItem.Title>
+        <ListItem.Subtitle style={{ color: 'grey' }}>
+          {`${item.affiliation}`}
+        </ListItem.Subtitle>
+      </ListItem.Content>
+      <Icon name='chevron-right' size={32} color='grey' />
+    </View>
+    <Card.Divider />
+  </View>
+)
 
 const ListView: React.VFC = () => {
   const { control, handleSubmit } = useForm<KeywordData>()
-  const [dataList, setDataList] = useState<any>()
+  const [dataList, setDataList] = useState<ItemProps[]>()
   const [empty, setEmpty] = useState(true)
   const [search, setSearch] = useState<string>('')
 
@@ -72,7 +89,7 @@ const ListView: React.VFC = () => {
         'SELECT * FROM items WHERE (`first_name` LIKE ? || "%" OR `last_name` LIKE ? || "%" OR `date` LIKE ? || "%" OR `affiliation` LIKE ? || "%" OR `memo` LIKE ? || "%")',
         [search, search, search, search, search],
         (_, resultSet) => {
-          const temp = []
+          const temp: ItemProps[] = []
           for (let i = 0; i < resultSet.rows.length; ++i) {
             temp.push(resultSet.rows.item(i))
           }
@@ -127,20 +144,13 @@ const ListView: React.VFC = () => {
       </View>
       <View style={styles.list}>
         {dataList && (
-          <FlatList
-            data={dataList}
-            ItemSeparatorComponent={listViewItemSeparator}
-            keyExtractor={(item, index) => index.toString()}
-            renderItem={({ item }) => (
-              <View key={item.last_name} style={{ padding: 20 }}>
-                <Text style={styles.item}> 姓: {item.last_name} </Text>
-                <Text style={styles.item}> 名: {item.first_name} </Text>
-                <Text style={styles.item}> 関係: {item.affiliation} </Text>
-                <Text style={styles.item}> 日付: {item.date} </Text>
-                <Text style={styles.item}> メモ: {item.memo} </Text>
-              </View>
-            )}
-          />
+          <Card containerStyle={{ width: '100%', borderRadius: 4 }}>
+            <FlatList
+              data={dataList}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={renderItem}
+            />
+          </Card>
         )}
       </View>
     </SafeAreaView>
@@ -176,6 +186,9 @@ const styles = StyleSheet.create({
   },
   list: {
     flex: 7,
+    width: '100%',
+    padding: 10,
+    alignItems: 'center',
   },
   item: {
     backgroundColor: '#EBEBEB',
