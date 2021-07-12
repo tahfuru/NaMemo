@@ -58,8 +58,8 @@ const openDatabase = () => {
 const db = openDatabase()
 
 const renderItem = ({ item }: { item: ItemProps }) => (
-  <View style={{}}>
-    <View
+  <View>
+    <ListItem
       key={item.last_name}
       style={{ height: 64, flexDirection: 'row', alignItems: 'center' }}>
       <ListItem.Content style={{ flex: 9, justifyContent: 'center' }}>
@@ -72,7 +72,7 @@ const renderItem = ({ item }: { item: ItemProps }) => (
         </ListItem.Subtitle>
       </ListItem.Content>
       <Icon name='chevron-right' size={32} color='grey' />
-    </View>
+    </ListItem>
     <Card.Divider />
   </View>
 )
