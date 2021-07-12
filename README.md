@@ -1,6 +1,10 @@
 # NaMemo
-Name + Memo　を由来とする人の名前を覚えるのを補助するスマホアプリです。
-expo-cliを用いて開発しています。
+Name + Memo　を由来とする人の名前を覚えるのを補助するスマホアプリです。\
+React Native + Typescript + Expo で開発しています。
+
+## Prerequisites
+expoの開発環境が必要です。\
+参考：　https://docs.expo.io/get-started/installation/
 
 ## How to get started
 Run the following command inside `NaMemo/`
