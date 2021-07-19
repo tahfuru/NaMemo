@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import {
-  Platform,
   SafeAreaView,
   View,
   TextInput,
@@ -9,49 +8,23 @@ import {
 } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { Button, Card, ListItem } from 'react-native-elements'
-import * as SQLite from 'expo-sqlite'
 import { useForm, Controller } from 'react-hook-form'
 import Icon from '@expo/vector-icons/MaterialIcons'
-import { DetailsScreenNavigationProp } from './types'
+import { DetailsScreenNavigationProp } from '../modules/types'
+
+import { openDatabase } from '../modules/register'
 
 type KeywordData = {
   search: string
 }
 
 type ItemProps = {
+  id: string
   first_name?: string
   last_name: string
   date: Date
   affiliation?: string
   memo?: string
-}
-
-const openDatabase = () => {
-  if (Platform.OS === 'web') {
-    return {
-      transaction: () => {
-        return {
-          executeSql: () => {},
-        }
-      },
-    }
-  }
-
-  const db = SQLite.openDatabase('db.db')
-  db.transaction((tx) => {
-    tx.executeSql(
-      'CREATE TABLE IF NOT EXISTS items (first_name text, last_name text NOT NULL, date date NOT NULL, affiliation text NOT NULL, memo text, PRIMARY KEY(last_name, date))',
-      [],
-      () => {
-        console.log('create table success (openDatabase)')
-      },
-      () => {
-        console.log('create table failed (openDatabase)')
-        return false
-      }
-    )
-  })
-  return db
 }
 
 const db = openDatabase()
@@ -123,42 +96,42 @@ const List: React.VFC = () => {
         />
       </View>
       <View style={styles.list}>
-        {dataList ? (
-          dataList.length > 0 && (
-            <Card containerStyle={{ width: '100%', borderRadius: 4 }}>
-              <FlatList
-                data={dataList}
-                keyExtractor={(item, index) => index.toString()}
-                renderItem={({ item }: { item: ItemProps }) => (
-                  <View>
-                    <ListItem
-                      key={item.last_name}
-                      style={{
-                        height: 64,
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                      }}
-                      onPress={() => navigation.navigate('Details', item)}>
-                      <ListItem.Content
-                        style={{ flex: 9, justifyContent: 'center' }}>
-                        <ListItem.Title
-                          style={{
-                            fontSize: 24,
-                          }}>{`${item.last_name} ${item.first_name}`}</ListItem.Title>
-                        <ListItem.Subtitle style={{ color: 'grey' }}>
-                          {`${item.affiliation}`}
-                        </ListItem.Subtitle>
-                      </ListItem.Content>
-                      <Icon name='chevron-right' size={32} color='grey' />
-                    </ListItem>
-                    <Card.Divider />
-                  </View>
-                )}
-              />
-            </Card>
-          )
-        ) : (
+        {empty ? (
           <></>
+        ) : (
+          <Card containerStyle={{ width: '100%', borderRadius: 4 }}>
+            <FlatList
+              data={dataList}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={({ item }: { item: ItemProps }) => (
+                <View>
+                  <ListItem
+                    key={item.last_name}
+                    style={{
+                      height: 64,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                    }}
+                    onPress={() => navigation.navigate('Details', item)}>
+                    <ListItem.Content
+                      style={{ flex: 9, justifyContent: 'center' }}>
+                      <ListItem.Title
+                        style={{
+                          fontSize: 24,
+                        }}>{`${item.last_name} ${
+                        item?.first_name || ''
+                      }`}</ListItem.Title>
+                      <ListItem.Subtitle style={{ color: 'grey' }}>
+                        {`${item.affiliation}`}
+                      </ListItem.Subtitle>
+                    </ListItem.Content>
+                    <Icon name='chevron-right' size={32} color='grey' />
+                  </ListItem>
+                  <Card.Divider />
+                </View>
+              )}
+            />
+          </Card>
         )}
       </View>
     </SafeAreaView>

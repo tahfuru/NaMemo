@@ -1,58 +1,34 @@
 import React, { useState } from 'react'
-import { Platform, StyleSheet, Text, View, TextInput } from 'react-native'
+import { StyleSheet, Text, View, TextInput } from 'react-native'
 import { Button } from 'react-native-elements'
 import DateTimePickerModal from 'react-native-modal-datetime-picker'
 import dayjs from 'dayjs'
-import * as SQLite from 'expo-sqlite'
 import { useForm, Controller } from 'react-hook-form'
 
-import { DetailsScreenNavigationProp, DetailsScreenRouteProp } from './types'
+import {
+  DetailsScreenNavigationProp,
+  DetailsScreenRouteProp,
+} from '../modules/types'
+import { openDatabase } from '../modules/register'
 
 interface Props {
   route: DetailsScreenRouteProp
   navigation: DetailsScreenNavigationProp
 }
 
-const openDatabase = () => {
-  if (Platform.OS === 'web') {
-    return {
-      transaction: () => {
-        return {
-          executeSql: () => {},
-        }
-      },
-    }
-  }
-
-  const db = SQLite.openDatabase('db.db')
-  db.transaction((tx) => {
-    tx.executeSql(
-      'CREATE TABLE IF NOT EXISTS items (first_name text, last_name text NOT NULL, date date NOT NULL, affiliation text NOT NULL, memo text, PRIMARY KEY(last_name, date))',
-      [],
-      () => {
-        console.log('create table success')
-      },
-      () => {
-        console.log('create table failed')
-        return false
-      }
-    )
-  })
-  return db
+type FormData = {
+  id: string
+  first_name?: string
+  last_name: string
+  date: Date
+  affiliation: string
+  memo?: string
 }
 
 const db = openDatabase()
 
-type FormData = {
-  first_name?: string
-  last_name?: string
-  date?: Date
-  affiliation?: string
-  memo?: string
-}
-
 const Edit: React.VFC<Props> = ({ route, navigation }) => {
-  const { last_name, first_name, date, affiliation, memo } = route.params
+  const { id, last_name, first_name, date, affiliation, memo } = route.params
   const {
     control,
     handleSubmit,
@@ -64,22 +40,16 @@ const Edit: React.VFC<Props> = ({ route, navigation }) => {
 
   const onSubmit = (data: FormData) => {
     const { first_name, last_name, date, affiliation, memo } = data
-    console.log(data)
+    console.log(last_name)
     db.transaction((tx) => {
       tx.executeSql(
-        'INSERT INTO items (first_name, last_name, date, affiliation, memo) VALUES (?, ?, ?, ?, ?)',
-        [
-          first_name,
-          last_name,
-          dayjs(date).format('YYYY-MM-DD'),
-          affiliation,
-          memo,
-        ],
-        () => {
-          console.log('insert items success')
+        'UPDATE items SET first_name=?, last_name=?, affiliation=?, memo=? WHERE id=id',
+        [first_name, last_name, affiliation, memo],
+        (txObj, resultSet) => {
+          console.log('update items success')
         },
-        () => {
-          console.log('insert values failed')
+        (txObj, error) => {
+          console.log('update values failed', error)
           return false
         }
       )
@@ -88,9 +58,9 @@ const Edit: React.VFC<Props> = ({ route, navigation }) => {
       )
     })
     alert(
-      `「${last_name} ${first_name}さん, 日付: ${dayjs(date).format(
+      `「${last_name} ${first_name || ''}さん, 日付: ${dayjs(date).format(
         'YYYY-MM-DD'
-      )}, 関係: ${affiliation}, メモ: ${memo}」 で登録しました。`
+      )}, 関係: ${affiliation}, メモ: ${memo || ''}」 で登録しました。`
     )
     reset()
   }
@@ -122,7 +92,7 @@ const Edit: React.VFC<Props> = ({ route, navigation }) => {
           name='date'
           control={control}
           rules={{
-            required: true,
+            required: false,
           }}
           defaultValue={date}
           render={({ field }) => (
@@ -156,7 +126,8 @@ const Edit: React.VFC<Props> = ({ route, navigation }) => {
               style={styles.input}
               onBlur={onBlur}
               onChangeText={onChange}
-              value={last_name}
+              value={value}
+              placeholder={last_name}
             />
           )}
           name='last_name'
@@ -169,14 +140,15 @@ const Edit: React.VFC<Props> = ({ route, navigation }) => {
         <Controller
           control={control}
           rules={{
-            required: true,
+            required: false,
           }}
           render={({ field: { onChange, onBlur, value } }) => (
             <TextInput
               style={styles.input}
               onBlur={onBlur}
               onChangeText={onChange}
-              value={first_name}
+              value={value}
+              placeholder={first_name}
             />
           )}
           name='first_name'
@@ -196,7 +168,8 @@ const Edit: React.VFC<Props> = ({ route, navigation }) => {
               style={styles.input}
               onBlur={onBlur}
               onChangeText={onChange}
-              value={affiliation}
+              value={value}
+              placeholder={affiliation}
             />
           )}
           name='affiliation'
@@ -216,7 +189,8 @@ const Edit: React.VFC<Props> = ({ route, navigation }) => {
               style={styles.input}
               onBlur={onBlur}
               onChangeText={onChange}
-              value={memo}
+              value={value}
+              placeholder={memo}
             />
           )}
           name='memo'
@@ -224,7 +198,7 @@ const Edit: React.VFC<Props> = ({ route, navigation }) => {
         />
       </View>
       <Button
-        title='登録'
+        title='更新'
         onPress={handleSubmit(onSubmit)}
         titleStyle={styles.buttonSubmit}
         containerStyle={{

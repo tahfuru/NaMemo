@@ -33,6 +33,7 @@
     "react-native-screens": "~3.0.0",
     "react-native-vector-icons": "^8.1.0",
     "react-native-web": "~0.13.12",
+    "react-navigation-tabs": "^2.11.1",
     "yup": "^0.32.9"
   },
   "devDependencies": {

@@ -1,40 +1,15 @@
 import React, { useState } from 'react'
-import { Platform, StyleSheet, Text, View, TextInput } from 'react-native'
+import { StyleSheet, Text, View, TextInput } from 'react-native'
 import { Button } from 'react-native-elements'
 import DateTimePickerModal from 'react-native-modal-datetime-picker'
 import dayjs from 'dayjs'
-import * as SQLite from 'expo-sqlite'
 import { useForm, Controller } from 'react-hook-form'
 
-const openDatabase = () => {
-  if (Platform.OS === 'web') {
-    return {
-      transaction: () => {
-        return {
-          executeSql: () => {},
-        }
-      },
-    }
-  }
-
-  const db = SQLite.openDatabase('db.db')
-  db.transaction((tx) => {
-    tx.executeSql(
-      'CREATE TABLE IF NOT EXISTS items (first_name text, last_name text NOT NULL, date date NOT NULL, affiliation text NOT NULL, memo text, PRIMARY KEY(last_name, date))',
-      [],
-      () => {
-        console.log('create table success')
-      },
-      () => {
-        console.log('create table failed')
-        return false
-      }
-    )
-  })
-  return db
-}
-
-const db = openDatabase()
+import { getUniqueStr } from '../modules/register'
+import {
+  RegisterViewScreenNavigationProp,
+  RegisterViewScreenRouteProp,
+} from '../modules/types'
 
 type FormData = {
   first_name?: string
@@ -43,8 +18,13 @@ type FormData = {
   affiliation?: string
   memo?: string
 }
+interface Props {
+  route: RegisterViewScreenRouteProp
+  navigation: RegisterViewScreenNavigationProp
+}
 
-const RegisterView: React.VFC = () => {
+const RegisterView: React.VFC<Props> = ({ route, navigation }) => {
+  const { db } = route.params
   const {
     control,
     handleSubmit,
@@ -56,11 +36,14 @@ const RegisterView: React.VFC = () => {
 
   const onSubmit = (data: FormData) => {
     const { first_name, last_name, date, affiliation, memo } = data
-    console.log(data)
+    const id = getUniqueStr()
+    console.log(id)
+
     db.transaction((tx) => {
       tx.executeSql(
-        'INSERT INTO items (first_name, last_name, date, affiliation, memo) VALUES (?, ?, ?, ?, ?)',
+        'INSERT INTO items (id, first_name, last_name, date, affiliation, memo) VALUES (?, ?, ?, ?, ?, ?)',
         [
+          id,
           first_name,
           last_name,
           dayjs(date).format('YYYY-MM-DD'),
@@ -80,9 +63,9 @@ const RegisterView: React.VFC = () => {
       )
     })
     alert(
-      `「${last_name} ${first_name}さん, 日付: ${dayjs(date).format(
+      `「${last_name} ${first_name || ''}さん, 日付: ${dayjs(date).format(
         'YYYY-MM-DD'
-      )}, 関係: ${affiliation}, メモ: ${memo}」 で登録しました。`
+      )}, 関係: ${affiliation}, メモ: ${memo || ''}」 で登録しました。`
     )
     reset()
   }
@@ -114,7 +97,7 @@ const RegisterView: React.VFC = () => {
           name='date'
           control={control}
           rules={{
-            required: true,
+            required: false,
           }}
           defaultValue={date}
           render={({ field }) => (
@@ -161,7 +144,7 @@ const RegisterView: React.VFC = () => {
         <Controller
           control={control}
           rules={{
-            required: true,
+            required: false,
           }}
           render={({ field: { onChange, onBlur, value } }) => (
             <TextInput
