@@ -3,7 +3,7 @@ import { createStackNavigator } from '@react-navigation/stack'
 
 import List from './List'
 import Edit from './Edit'
-import { StackParamList } from './types'
+import { StackParamList } from '../modules/types'
 
 const Stack = createStackNavigator<StackParamList>()
 
