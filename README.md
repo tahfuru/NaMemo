@@ -10,7 +10,7 @@ yarn
 Expoの開発環境が必要ですがおそらく上記のコマンドで十分。\
 動かない場合はこちらを参照してください　https://docs.expo.io/get-started/installation/
 
-## How to get started
+## How to run NaMemo
 Run the following command inside `NaMemo/`
 ```
 expo start
