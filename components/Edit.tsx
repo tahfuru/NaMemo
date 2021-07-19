@@ -36,7 +36,7 @@ const Edit: React.VFC<Props> = ({ route, navigation }) => {
   const [new_date, setDate] = useState(new Date())
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false)
 
-  const onSubmit = (data: FormData) => {
+  const onSubmitUpdate = (data: FormData) => {
     const { first_name, last_name, date, affiliation, memo } = data
     console.log(last_name)
     const db = openDatabase()
@@ -62,6 +62,27 @@ const Edit: React.VFC<Props> = ({ route, navigation }) => {
       )}, 関係: ${affiliation}, メモ: ${memo || ''}」 で登録しました。`
     )
     reset()
+  }
+  const onSubmitRemove = () => {
+    const db = openDatabase()
+    db.transaction((tx) => {
+      tx.executeSql(
+        'DELETE FROM items WHERE id=?',
+        [id],
+        (txObj, resultSet) => {
+          console.log('delete items success')
+        },
+        (txObj, error) => {
+          console.log('delete values failed', error)
+          return false
+        }
+      )
+    })
+    alert(
+      `「${last_name} ${first_name || ''}さん, 日付: ${dayjs(date).format(
+        'YYYY-MM-DD'
+      )}, 関係: ${affiliation}, メモ: ${memo || ''}」 を削除しました。`
+    )
   }
 
   const showDatePicker = () => {
@@ -194,8 +215,18 @@ const Edit: React.VFC<Props> = ({ route, navigation }) => {
       </View>
       <Button
         title='更新'
-        onPress={handleSubmit(onSubmit)}
-        titleStyle={styles.buttonSubmit}
+        onPress={handleSubmit(onSubmitUpdate)}
+        titleStyle={styles.buttonSubmitUpdate}
+        containerStyle={{
+          flex: 1,
+          justifyContent: 'center',
+          flexDirection: 'row',
+        }}
+      />
+      <Button
+        title='削除'
+        onPress={handleSubmit(onSubmitRemove)}
+        titleStyle={styles.buttonSubmitRemove}
         containerStyle={{
           flex: 1,
           justifyContent: 'center',
@@ -248,7 +279,11 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
   },
-  buttonSubmit: {
+  buttonSubmitUpdate: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  buttonSubmitRemove: {
     fontSize: 20,
     fontWeight: 'bold',
   },
