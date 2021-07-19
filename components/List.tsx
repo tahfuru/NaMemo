@@ -15,7 +15,7 @@ import { DetailsScreenNavigationProp } from '../modules/types'
 import { openDatabase } from '../modules/register'
 
 type KeywordData = {
-  search: string
+  keyword: string
 }
 
 type ItemProps = {
@@ -27,20 +27,21 @@ type ItemProps = {
   memo?: string
 }
 
-const db = openDatabase()
-
 const List: React.VFC = () => {
   const { control, handleSubmit } = useForm<KeywordData>()
   const [dataList, setDataList] = useState<ItemProps[]>()
   const [empty, setEmpty] = useState(true)
-  const [search, setSearch] = useState<string>('')
+  const [search, setSearch] = useState(false)
+  const [keyword, setKeyword] = useState<string>('')
   const navigation = useNavigation<DetailsScreenNavigationProp>()
 
   useEffect(() => {
+    setSearch(false)
+    const db = openDatabase()
     db.transaction((tx) => {
       tx.executeSql(
         'SELECT * FROM items WHERE (`first_name` LIKE ? || "%" OR `last_name` LIKE ? || "%" OR `date` LIKE ? || "%" OR `affiliation` LIKE ? || "%" OR `memo` LIKE ? || "%")',
-        [search, search, search, search, search],
+        [keyword, keyword, keyword, keyword, keyword],
         (_, resultSet) => {
           const temp: ItemProps[] = []
           for (let i = 0; i < resultSet.rows.length; ++i) {
@@ -62,8 +63,9 @@ const List: React.VFC = () => {
   }, [search])
 
   const onSubmit = (data: KeywordData) => {
-    const { search } = data
-    setSearch(search)
+    const { keyword } = data
+    setKeyword(keyword)
+    setSearch(true)
   }
 
   return (
@@ -83,7 +85,7 @@ const List: React.VFC = () => {
               placeholder='keyword'
             />
           )}
-          name='search'
+          name='keyword'
           defaultValue=''
         />
         <Button
