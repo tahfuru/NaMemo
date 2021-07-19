@@ -25,8 +25,6 @@ type FormData = {
   memo?: string
 }
 
-const db = openDatabase()
-
 const Edit: React.VFC<Props> = ({ route, navigation }) => {
   const { id, last_name, first_name, date, affiliation, memo } = route.params
   const {
@@ -41,10 +39,11 @@ const Edit: React.VFC<Props> = ({ route, navigation }) => {
   const onSubmit = (data: FormData) => {
     const { first_name, last_name, date, affiliation, memo } = data
     console.log(last_name)
+    const db = openDatabase()
     db.transaction((tx) => {
       tx.executeSql(
-        'UPDATE items SET first_name=?, last_name=?, affiliation=?, memo=? WHERE id=id',
-        [first_name, last_name, affiliation, memo],
+        'UPDATE items SET first_name=?, last_name=?, affiliation=?, memo=? WHERE id=?',
+        [first_name, last_name, affiliation, memo, id],
         (txObj, resultSet) => {
           console.log('update items success')
         },
@@ -127,11 +126,10 @@ const Edit: React.VFC<Props> = ({ route, navigation }) => {
               onBlur={onBlur}
               onChangeText={onChange}
               value={value}
-              placeholder={last_name}
             />
           )}
           name='last_name'
-          defaultValue=''
+          defaultValue={last_name}
         />
         {errors.last_name && <Text>Last name is required.</Text>}
       </View>
@@ -148,11 +146,10 @@ const Edit: React.VFC<Props> = ({ route, navigation }) => {
               onBlur={onBlur}
               onChangeText={onChange}
               value={value}
-              placeholder={first_name}
             />
           )}
           name='first_name'
-          defaultValue=''
+          defaultValue={first_name}
         />
         {errors.first_name && <Text>First name is required.</Text>}
       </View>
@@ -169,11 +166,10 @@ const Edit: React.VFC<Props> = ({ route, navigation }) => {
               onBlur={onBlur}
               onChangeText={onChange}
               value={value}
-              placeholder={affiliation}
             />
           )}
           name='affiliation'
-          defaultValue=''
+          defaultValue={affiliation}
         />
         {errors.affiliation && <Text>Affiliation is required.</Text>}
       </View>
@@ -190,11 +186,10 @@ const Edit: React.VFC<Props> = ({ route, navigation }) => {
               onBlur={onBlur}
               onChangeText={onChange}
               value={value}
-              placeholder={memo}
             />
           )}
           name='memo'
-          defaultValue=' '
+          defaultValue={memo}
         />
       </View>
       <Button

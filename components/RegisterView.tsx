@@ -6,10 +6,7 @@ import dayjs from 'dayjs'
 import { useForm, Controller } from 'react-hook-form'
 
 import { getUniqueStr } from '../modules/register'
-import {
-  RegisterViewScreenNavigationProp,
-  RegisterViewScreenRouteProp,
-} from '../modules/types'
+import { openDatabase } from '../modules/register'
 
 type FormData = {
   first_name?: string
@@ -18,13 +15,9 @@ type FormData = {
   affiliation?: string
   memo?: string
 }
-interface Props {
-  route: RegisterViewScreenRouteProp
-  navigation: RegisterViewScreenNavigationProp
-}
 
-const RegisterView: React.VFC<Props> = ({ route, navigation }) => {
-  const { db } = route.params
+const RegisterView: React.VFC = () => {
+  const db = openDatabase()
   const {
     control,
     handleSubmit,
