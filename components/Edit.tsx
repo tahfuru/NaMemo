@@ -4,7 +4,6 @@ import { Button } from 'react-native-elements'
 import DateTimePickerModal from 'react-native-modal-datetime-picker'
 import dayjs from 'dayjs'
 import * as SQLite from 'expo-sqlite'
-import * as FileSystem from 'expo-file-system'
 import { useForm, Controller } from 'react-hook-form'
 
 import { DetailsScreenNavigationProp, DetailsScreenRouteProp } from './types'
@@ -25,7 +24,6 @@ const openDatabase = () => {
     }
   }
 
-  console.log(FileSystem.documentDirectory + 'SQLite/')
   const db = SQLite.openDatabase('db.db')
   db.transaction((tx) => {
     tx.executeSql(
