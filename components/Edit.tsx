@@ -7,6 +7,13 @@ import * as SQLite from 'expo-sqlite'
 import * as FileSystem from 'expo-file-system'
 import { useForm, Controller } from 'react-hook-form'
 
+import { DetailsScreenNavigationProp, DetailsScreenRouteProp } from './types'
+
+interface Props {
+  route: DetailsScreenRouteProp
+  navigation: DetailsScreenNavigationProp
+}
+
 const openDatabase = () => {
   if (Platform.OS === 'web') {
     return {
@@ -46,14 +53,15 @@ type FormData = {
   memo?: string
 }
 
-const RegisterView: React.VFC = () => {
+const Edit: React.VFC<Props> = ({ route, navigation }) => {
+  const { last_name, first_name, date, affiliation, memo } = route.params
   const {
     control,
     handleSubmit,
     reset,
     formState: { errors },
   } = useForm<FormData>()
-  const [date, setDate] = useState(new Date())
+  const [new_date, setDate] = useState(new Date())
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false)
 
   const onSubmit = (data: FormData) => {
@@ -150,13 +158,13 @@ const RegisterView: React.VFC = () => {
               style={styles.input}
               onBlur={onBlur}
               onChangeText={onChange}
-              value={value}
+              value={last_name}
             />
           )}
           name='last_name'
           defaultValue=''
         />
-        {errors.last_name && <Text>姓は必須です。</Text>}
+        {errors.last_name && <Text>Last name is required.</Text>}
       </View>
       <View style={styles.form}>
         <Text style={styles.formTitle}>　名</Text>
@@ -170,12 +178,13 @@ const RegisterView: React.VFC = () => {
               style={styles.input}
               onBlur={onBlur}
               onChangeText={onChange}
-              value={value}
+              value={first_name}
             />
           )}
           name='first_name'
           defaultValue=''
         />
+        {errors.first_name && <Text>First name is required.</Text>}
       </View>
       <View style={styles.form}>
         <Text style={styles.formTitle}>関係</Text>
@@ -189,13 +198,13 @@ const RegisterView: React.VFC = () => {
               style={styles.input}
               onBlur={onBlur}
               onChangeText={onChange}
-              value={value}
+              value={affiliation}
             />
           )}
           name='affiliation'
           defaultValue=''
         />
-        {errors.affiliation && <Text>関係は必須です。</Text>}
+        {errors.affiliation && <Text>Affiliation is required.</Text>}
       </View>
       <View style={styles.form}>
         <Text style={styles.formTitle}>メモ</Text>
@@ -209,7 +218,7 @@ const RegisterView: React.VFC = () => {
               style={styles.input}
               onBlur={onBlur}
               onChangeText={onChange}
-              value={value}
+              value={memo}
             />
           )}
           name='memo'
@@ -278,4 +287,4 @@ const styles = StyleSheet.create({
   },
 })
 
-export default RegisterView
+export default Edit
