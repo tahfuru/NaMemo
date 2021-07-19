@@ -10,7 +10,6 @@ import {
 import { useNavigation } from '@react-navigation/native'
 import { Button, Card, ListItem } from 'react-native-elements'
 import * as SQLite from 'expo-sqlite'
-import * as FileSystem from 'expo-file-system'
 import { useForm, Controller } from 'react-hook-form'
 import Icon from '@expo/vector-icons/MaterialIcons'
 import { DetailsScreenNavigationProp } from './types'
@@ -38,7 +37,6 @@ const openDatabase = () => {
     }
   }
 
-  console.log(FileSystem.documentDirectory + 'SQLite/')
   const db = SQLite.openDatabase('db.db')
   db.transaction((tx) => {
     tx.executeSql(
