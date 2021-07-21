@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import {
   SafeAreaView,
   View,
+  Keyboard,
+  TouchableWithoutFeedback,
   TextInput,
   StyleSheet,
   FlatList,
@@ -69,74 +71,76 @@ const List: React.VFC = () => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.form}>
-        <Controller
-          control={control}
-          rules={{
-            required: false,
-          }}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
-              style={styles.input}
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value}
-              placeholder='keyword'
-            />
+    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+      <SafeAreaView style={styles.container}>
+        <View style={styles.form}>
+          <Controller
+            control={control}
+            rules={{
+              required: false,
+            }}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                style={styles.input}
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}
+                placeholder='keyword'
+              />
+            )}
+            name='keyword'
+            defaultValue=''
+          />
+          <Button
+            title='検索'
+            onPress={handleSubmit(onSubmit)}
+            titleStyle={styles.buttonSubmit}
+            containerStyle={{
+              margin: 10,
+            }}
+          />
+        </View>
+        <View style={styles.list}>
+          {empty ? (
+            <></>
+          ) : (
+            <Card containerStyle={{ width: '100%', borderRadius: 4 }}>
+              <FlatList
+                data={dataList}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={({ item }: { item: ItemProps }) => (
+                  <View>
+                    <ListItem
+                      key={item.last_name}
+                      style={{
+                        height: 64,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                      }}
+                      onPress={() => navigation.navigate('Details', item)}>
+                      <ListItem.Content
+                        style={{ flex: 9, justifyContent: 'center' }}>
+                        <ListItem.Title
+                          style={{
+                            fontSize: 24,
+                          }}>{`${item.last_name} ${
+                          item?.first_name || ''
+                        }`}</ListItem.Title>
+                        <ListItem.Subtitle style={{ color: 'grey' }}>
+                          {`${item.affiliation}`}
+                        </ListItem.Subtitle>
+                      </ListItem.Content>
+                      <Icon name='chevron-right' size={32} color='grey' />
+                    </ListItem>
+                    <Card.Divider />
+                  </View>
+                )}
+              />
+            </Card>
           )}
-          name='keyword'
-          defaultValue=''
-        />
-        <Button
-          title='検索'
-          onPress={handleSubmit(onSubmit)}
-          titleStyle={styles.buttonSubmit}
-          containerStyle={{
-            margin: 10,
-          }}
-        />
-      </View>
-      <View style={styles.list}>
-        {empty ? (
-          <></>
-        ) : (
-          <Card containerStyle={{ width: '100%', borderRadius: 4 }}>
-            <FlatList
-              data={dataList}
-              keyExtractor={(item, index) => index.toString()}
-              renderItem={({ item }: { item: ItemProps }) => (
-                <View>
-                  <ListItem
-                    key={item.last_name}
-                    style={{
-                      height: 64,
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                    }}
-                    onPress={() => navigation.navigate('Details', item)}>
-                    <ListItem.Content
-                      style={{ flex: 9, justifyContent: 'center' }}>
-                      <ListItem.Title
-                        style={{
-                          fontSize: 24,
-                        }}>{`${item.last_name} ${
-                        item?.first_name || ''
-                      }`}</ListItem.Title>
-                      <ListItem.Subtitle style={{ color: 'grey' }}>
-                        {`${item.affiliation}`}
-                      </ListItem.Subtitle>
-                    </ListItem.Content>
-                    <Icon name='chevron-right' size={32} color='grey' />
-                  </ListItem>
-                  <Card.Divider />
-                </View>
-              )}
-            />
-          </Card>
-        )}
-      </View>
-    </SafeAreaView>
+        </View>
+      </SafeAreaView>
+    </TouchableWithoutFeedback>
   )
 }
 
