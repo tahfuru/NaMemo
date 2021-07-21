@@ -45,6 +45,7 @@ const App: React.VFC = () => {
           name='追加'
           component={RegisterView}
           options={{
+            title: 'NaMemo',
             tabBarLabel: '追加',
             tabBarIcon: () => <Icon name='person-add' size={48} flex={1} />,
           }}

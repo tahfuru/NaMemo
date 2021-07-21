@@ -1,5 +1,15 @@
 import React, { useState } from 'react'
-import { StyleSheet, Text, View, TextInput } from 'react-native'
+import {
+  Platform,
+  StyleSheet,
+  Text,
+  View,
+  SafeAreaView,
+  TextInput,
+  Keyboard,
+  KeyboardAvoidingView,
+  TouchableWithoutFeedback,
+} from 'react-native'
 import { Button } from 'react-native-elements'
 import DateTimePickerModal from 'react-native-modal-datetime-picker'
 import dayjs from 'dayjs'
@@ -101,139 +111,145 @@ const Edit: React.VFC<Props> = ({ route, navigation }) => {
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.dateForm}>
-        <Button
-          onPress={showDatePicker}
-          title='日付'
-          titleStyle={styles.buttonDate}
-        />
-        <Controller
-          name='date'
-          control={control}
-          rules={{
-            required: false,
-          }}
-          defaultValue={date}
-          render={({ field }) => (
-            <>
-              <DateTimePickerModal
-                isVisible={isDatePickerVisible}
-                mode='date'
-                onConfirm={handleDatePicker}
-                onCancel={hideDatePicker}
-                confirmTextIOS='決定'
-                cancelTextIOS='キャンセル'
-                date={date}
-                onChange={(date) => field.onChange(date)}
-              />
-              <Text style={styles.dateText}>
-                {dayjs(date).format('YYYY年MM月DD日')}
-              </Text>
-            </>
-          )}
-        />
-      </View>
-      <View style={styles.form}>
-        <Text style={styles.formTitle}>　姓</Text>
-        <Controller
-          control={control}
-          rules={{
-            required: true,
-          }}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
-              style={styles.input}
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{ flex: 1 }}>
+      <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+        <SafeAreaView style={styles.container}>
+          <View style={styles.dateForm}>
+            <Button
+              onPress={showDatePicker}
+              title='日付'
+              titleStyle={styles.buttonDate}
             />
-          )}
-          name='last_name'
-          defaultValue={last_name}
-        />
-        {errors.last_name && <Text>Last name is required.</Text>}
-      </View>
-      <View style={styles.form}>
-        <Text style={styles.formTitle}>　名</Text>
-        <Controller
-          control={control}
-          rules={{
-            required: false,
-          }}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
-              style={styles.input}
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value}
+            <Controller
+              name='date'
+              control={control}
+              rules={{
+                required: false,
+              }}
+              defaultValue={date}
+              render={({ field }) => (
+                <>
+                  <DateTimePickerModal
+                    isVisible={isDatePickerVisible}
+                    mode='date'
+                    onConfirm={handleDatePicker}
+                    onCancel={hideDatePicker}
+                    confirmTextIOS='決定'
+                    cancelTextIOS='キャンセル'
+                    date={date}
+                    onChange={(date) => field.onChange(date)}
+                  />
+                  <Text style={styles.dateText}>
+                    {dayjs(date).format('YYYY年MM月DD日')}
+                  </Text>
+                </>
+              )}
             />
-          )}
-          name='first_name'
-          defaultValue={first_name}
-        />
-        {errors.first_name && <Text>First name is required.</Text>}
-      </View>
-      <View style={styles.form}>
-        <Text style={styles.formTitle}>関係</Text>
-        <Controller
-          control={control}
-          rules={{
-            required: true,
-          }}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
-              style={styles.input}
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value}
+          </View>
+          <View style={styles.form}>
+            <Text style={styles.formTitle}>　姓</Text>
+            <Controller
+              control={control}
+              rules={{
+                required: true,
+              }}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  style={styles.input}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
+              name='last_name'
+              defaultValue={last_name}
             />
-          )}
-          name='affiliation'
-          defaultValue={affiliation}
-        />
-        {errors.affiliation && <Text>Affiliation is required.</Text>}
-      </View>
-      <View style={styles.form}>
-        <Text style={styles.formTitle}>メモ</Text>
-        <Controller
-          control={control}
-          rules={{
-            required: false,
-          }}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
-              style={styles.input}
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value}
+            {errors.last_name && <Text>Last name is required.</Text>}
+          </View>
+          <View style={styles.form}>
+            <Text style={styles.formTitle}>　名</Text>
+            <Controller
+              control={control}
+              rules={{
+                required: false,
+              }}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  style={styles.input}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
+              name='first_name'
+              defaultValue={first_name}
             />
-          )}
-          name='memo'
-          defaultValue={memo}
-        />
-      </View>
-      <Button
-        title='更新'
-        onPress={handleSubmit(onSubmitUpdate)}
-        titleStyle={styles.buttonSubmitUpdate}
-        containerStyle={{
-          flex: 1,
-          justifyContent: 'center',
-          flexDirection: 'row',
-        }}
-      />
-      <Button
-        title='削除'
-        onPress={handleSubmit(onSubmitRemove)}
-        titleStyle={styles.buttonSubmitRemove}
-        containerStyle={{
-          flex: 1,
-          justifyContent: 'center',
-          flexDirection: 'row',
-        }}
-      />
-    </View>
+            {errors.first_name && <Text>First name is required.</Text>}
+          </View>
+          <View style={styles.form}>
+            <Text style={styles.formTitle}>関係</Text>
+            <Controller
+              control={control}
+              rules={{
+                required: true,
+              }}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  style={styles.input}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
+              name='affiliation'
+              defaultValue={affiliation}
+            />
+            {errors.affiliation && <Text>Affiliation is required.</Text>}
+          </View>
+          <View style={styles.form}>
+            <Text style={styles.formTitle}>メモ</Text>
+            <Controller
+              control={control}
+              rules={{
+                required: false,
+              }}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  style={styles.input}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
+              name='memo'
+              defaultValue={memo}
+            />
+          </View>
+          <Button
+            title='更新'
+            onPress={handleSubmit(onSubmitUpdate)}
+            titleStyle={styles.buttonSubmitUpdate}
+            containerStyle={{
+              flex: 1,
+              justifyContent: 'center',
+              flexDirection: 'row',
+            }}
+          />
+          <Button
+            title='削除'
+            onPress={handleSubmit(onSubmitRemove)}
+            titleStyle={styles.buttonSubmitRemove}
+            containerStyle={{
+              flex: 1,
+              justifyContent: 'center',
+              flexDirection: 'row',
+            }}
+          />
+        </SafeAreaView>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   )
 }
 
