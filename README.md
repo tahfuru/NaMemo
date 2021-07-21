@@ -3,11 +3,14 @@ Name + Memo　を由来とする人の名前を覚えるのを補助するスマ
 React Native + Typescript + Expo で開発しています。
 
 ## Prerequisites
-Run the following command inside `NaMemo/`
+Run the following command
 ```
-yarn
+npm install -g expo-cli
 ```
-Expoの開発環境が必要ですがおそらく上記のコマンドで十分。\
+or
+```
+yarn global add expo-cli
+```
 動かない場合はこちらを参照してください　https://docs.expo.io/get-started/installation/
 
 ## How to run NaMemo
