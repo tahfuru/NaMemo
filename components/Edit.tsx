@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import {
+  Alert,
   Platform,
   StyleSheet,
   Text,
@@ -66,7 +67,8 @@ const Edit: React.VFC<Props> = ({ route, navigation }) => {
         console.log(JSON.stringify(rows))
       )
     })
-    alert(
+    Alert.alert(
+      '更新完了',
       `「${last_name} ${first_name || ''}さん, 日付: ${dayjs(date).format(
         'YYYY-MM-DD'
       )}, 関係: ${affiliation}, メモ: ${memo || ''}」 で登録しました。`
@@ -88,7 +90,8 @@ const Edit: React.VFC<Props> = ({ route, navigation }) => {
         }
       )
     })
-    alert(
+    Alert.alert(
+      '削除完了',
       `「${last_name} ${first_name || ''}さん, 日付: ${dayjs(date).format(
         'YYYY-MM-DD'
       )}, 関係: ${affiliation}, メモ: ${memo || ''}」 を削除しました。`
@@ -140,6 +143,8 @@ const Edit: React.VFC<Props> = ({ route, navigation }) => {
                     cancelTextIOS='キャンセル'
                     date={date}
                     onChange={(date) => field.onChange(date)}
+                    textColor='black'
+                    pickerContainerStyleIOS={styles.pickerContainerStyleIOS}
                   />
                   <Text style={styles.dateText}>
                     {dayjs(date).format('YYYY年MM月DD日')}
@@ -166,7 +171,7 @@ const Edit: React.VFC<Props> = ({ route, navigation }) => {
               name='last_name'
               defaultValue={last_name}
             />
-            {errors.last_name && <Text>Last name is required.</Text>}
+            {errors.last_name && <Text>姓は必須です。</Text>}
           </View>
           <View style={styles.form}>
             <Text style={styles.formTitle}>　名</Text>
@@ -186,7 +191,6 @@ const Edit: React.VFC<Props> = ({ route, navigation }) => {
               name='first_name'
               defaultValue={first_name}
             />
-            {errors.first_name && <Text>First name is required.</Text>}
           </View>
           <View style={styles.form}>
             <Text style={styles.formTitle}>関係</Text>
@@ -206,7 +210,7 @@ const Edit: React.VFC<Props> = ({ route, navigation }) => {
               name='affiliation'
               defaultValue={affiliation}
             />
-            {errors.affiliation && <Text>Affiliation is required.</Text>}
+            {errors.affiliation && <Text>関係は必須です。</Text>}
           </View>
           <View style={styles.form}>
             <Text style={styles.formTitle}>メモ</Text>
@@ -262,6 +266,9 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     backgroundColor: '#59C3C3',
     justifyContent: 'center',
+  },
+  pickerContainerStyleIOS: {
+    backgroundColor: 'white',
   },
   dateForm: {
     flex: 2,

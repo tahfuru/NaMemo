@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import {
+  Alert,
   StyleSheet,
   Text,
   View,
@@ -65,7 +66,8 @@ const RegisterView: React.VFC = () => {
         console.log(JSON.stringify(rows))
       )
     })
-    alert(
+    Alert.alert(
+      '登録完了',
       `「${last_name} ${first_name || ''}さん, 日付: ${dayjs(date).format(
         'YYYY-MM-DD'
       )}, 関係: ${affiliation}, メモ: ${memo || ''}」 で登録しました。`
