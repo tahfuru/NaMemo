@@ -37,24 +37,33 @@ type FormData = {
 }
 
 const Edit: React.VFC<Props> = ({ route, navigation }) => {
-  const { id, last_name, first_name, date, affiliation, memo } = route.params
+  const { id, last_name, first_name, affiliation, memo } = route.params
+  const [date, setDate] = useState(
+    new Date(dayjs(route.params.date).format('YYYY-MM-DD'))
+  )
+
   const {
     control,
     handleSubmit,
     reset,
     formState: { errors },
   } = useForm<FormData>()
-  const [new_date, setDate] = useState(new Date())
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false)
 
   const onSubmitUpdate = (data: FormData) => {
     const { first_name, last_name, date, affiliation, memo } = data
-    console.log(last_name)
     const db = openDatabase()
     db.transaction((tx) => {
       tx.executeSql(
-        'UPDATE items SET first_name=?, last_name=?, affiliation=?, memo=? WHERE id=?',
-        [first_name, last_name, affiliation, memo, id],
+        'UPDATE items SET first_name=?, last_name=?, date=?, affiliation=?, memo=? WHERE id=?',
+        [
+          first_name,
+          last_name,
+          dayjs(date).format('YYYY-MM-DD'),
+          affiliation,
+          memo,
+          id,
+        ],
         (txObj, resultSet) => {
           console.log('update items success')
         },
@@ -107,9 +116,8 @@ const Edit: React.VFC<Props> = ({ route, navigation }) => {
   }
 
   const handleDatePicker = (selectedDate: Date) => {
-    const currentDate = selectedDate || date
+    const currentDate = selectedDate
     setDate(currentDate)
-    console.log(selectedDate)
     hideDatePicker()
   }
 
