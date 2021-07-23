@@ -118,6 +118,8 @@ const RegisterView: React.VFC = () => {
                     cancelTextIOS='キャンセル'
                     date={date}
                     onChange={(date) => field.onChange(date)}
+                    textColor='black'
+                    pickerContainerStyleIOS={styles.pickerContainerStyleIOS}
                   />
                   <Text style={styles.dateText}>
                     {dayjs(date).format('YYYY年MM月DD日')}
@@ -229,6 +231,9 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     backgroundColor: '#59C3C3',
     justifyContent: 'center',
+  },
+  pickerContainerStyleIOS: {
+    backgroundColor: 'white',
   },
   dateForm: {
     flex: 2,
