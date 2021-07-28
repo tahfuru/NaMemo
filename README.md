@@ -22,8 +22,18 @@ expo start
 
 ## Usage
 1. 日付、姓（必須）、名（必須）、関係（必須）、メモをフォームに記入し登録
+
+![IMG_3424](https://user-images.githubusercontent.com/51317086/127283926-d7b88a73-7b75-4869-908a-1ee427657329.PNG)
+
 2. リストで表示
+
+
+![IMG_3425](https://user-images.githubusercontent.com/51317086/127284371-dead27a2-fac7-4cd5-8f3d-eaf995176a53.PNG)
+
 3. リストの検索バーに任意のキーワードを入力することでそのキーワードを含むデータのみ表示
+
+![IMG_3424](https://user-images.githubusercontent.com/51317086/127284493-7867d395-40d6-4b8f-aecb-c483f82baef6.PNG)
+
 
 ## Directory Structure and Description
 ```
