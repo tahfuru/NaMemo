@@ -13,8 +13,8 @@ import {
 } from 'react-native'
 import { Button } from 'react-native-elements'
 import DateTimePickerModal from 'react-native-modal-datetime-picker'
-import dayjs from 'dayjs'
 import { useForm, Controller } from 'react-hook-form'
+import dayjs from 'dayjs'
 
 import { getUniqueStr } from '../modules/register'
 import { openDatabase } from '../modules/register'
@@ -27,7 +27,7 @@ type FormData = {
   memo?: string
 }
 
-const RegisterView: React.VFC = () => {
+const RegisterView = () => {
   const db = openDatabase()
   const {
     control,

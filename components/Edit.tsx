@@ -13,8 +13,8 @@ import {
 } from 'react-native'
 import { Button } from 'react-native-elements'
 import DateTimePickerModal from 'react-native-modal-datetime-picker'
-import dayjs from 'dayjs'
 import { useForm, Controller } from 'react-hook-form'
+import dayjs from 'dayjs'
 
 import {
   DetailsScreenNavigationProp,
@@ -22,7 +22,7 @@ import {
 } from '../modules/types'
 import { openDatabase } from '../modules/register'
 
-interface Props {
+type EditProps = {
   route: DetailsScreenRouteProp
   navigation: DetailsScreenNavigationProp
 }
@@ -36,7 +36,7 @@ type FormData = {
   memo?: string
 }
 
-const Edit: React.VFC<Props> = ({ route, navigation }) => {
+const Edit = ({ route, navigation }: EditProps) => {
   const { id, last_name, first_name, affiliation, memo } = route.params
   const [date, setDate] = useState(
     new Date(dayjs(route.params.date).format('YYYY-MM-DD'))
