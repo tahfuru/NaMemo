@@ -12,8 +12,8 @@ import { useNavigation } from '@react-navigation/native'
 import { Button, Card, ListItem } from 'react-native-elements'
 import { useForm, Controller } from 'react-hook-form'
 import Icon from '@expo/vector-icons/MaterialIcons'
-import { DetailsScreenNavigationProp } from '../modules/types'
 
+import { DetailsScreenNavigationProp } from '../modules/types'
 import { openDatabase } from '../modules/register'
 
 type KeywordData = {
@@ -29,7 +29,7 @@ type ItemProps = {
   memo?: string
 }
 
-const List: React.VFC = () => {
+const List = () => {
   const { control, handleSubmit } = useForm<KeywordData>()
   const [dataList, setDataList] = useState<ItemProps[]>()
   const [empty, setEmpty] = useState(true)

@@ -9,7 +9,7 @@ import ListView from './components/ListView'
 
 const Tab = createBottomTabNavigator()
 
-const App: React.VFC = () => {
+const App = () => {
   return (
     <NavigationContainer>
       <Tab.Navigator

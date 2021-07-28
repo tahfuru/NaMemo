@@ -7,7 +7,7 @@ import { StackParamList } from '../modules/types'
 
 const Stack = createStackNavigator<StackParamList>()
 
-const ListView: React.VFC = () => {
+const ListView = () => {
   return (
     <Stack.Navigator>
       <Stack.Screen name='List' component={List} />
