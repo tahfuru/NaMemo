@@ -2,7 +2,8 @@
 Name + Memo　を由来とする人の名前を覚えるのを補助するスマホアプリです。\
 React Native + Typescript + Expo で開発しています。
 
-## Prerequisites
+## Prerequisites (Mac)
+### Install `expo-cli`
 Run the following command
 ```
 npm install -g expo-cli
