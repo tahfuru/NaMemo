@@ -202,6 +202,7 @@ const RegisterView = () => {
                   onBlur={onBlur}
                   onChangeText={onChange}
                   value={value}
+                  multiline={true}
                 />
               )}
               name='memo'
@@ -214,6 +215,7 @@ const RegisterView = () => {
             titleStyle={styles.buttonSubmit}
             containerStyle={{
               flex: 1,
+              marginTop: 10,
               justifyContent: 'center',
               flexDirection: 'row',
             }}
@@ -238,7 +240,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   dateForm: {
-    flex: 2,
+    flex: 1.5,
     justifyContent: 'center',
     alignItems: 'center',
     color: 'white',
@@ -252,7 +254,7 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: '#fff',
     borderColor: 'black',
-    width: 200,
+    width: 250,
     padding: 10,
     borderRadius: 4,
     fontSize: 20,
