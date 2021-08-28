@@ -233,32 +233,41 @@ const Edit = ({ route, navigation }: EditProps) => {
                   onBlur={onBlur}
                   onChangeText={onChange}
                   value={value}
+                  multiline={true}
                 />
               )}
               name='memo'
               defaultValue={memo}
             />
           </View>
-          <Button
-            title='更新'
-            onPress={handleSubmit(onSubmitUpdate)}
-            titleStyle={styles.buttonSubmitUpdate}
-            containerStyle={{
+          <View
+            style={{
               flex: 1,
               justifyContent: 'center',
               flexDirection: 'row',
-            }}
-          />
-          <Button
-            title='削除'
-            onPress={handleSubmit(onSubmitRemove)}
-            titleStyle={styles.buttonSubmitRemove}
-            containerStyle={{
-              flex: 1,
-              justifyContent: 'center',
-              flexDirection: 'row',
-            }}
-          />
+            }}>
+            <Button
+              title='削除'
+              onPress={handleSubmit(onSubmitRemove)}
+              titleStyle={styles.buttonSubmitRemove}
+              buttonStyle={{
+                backgroundColor: '#D00000',
+              }}
+              containerStyle={{
+                margin: 20,
+                flex: 1,
+              }}
+            />
+            <Button
+              title='更新'
+              onPress={handleSubmit(onSubmitUpdate)}
+              titleStyle={styles.buttonSubmitUpdate}
+              containerStyle={{
+                margin: 20,
+                flex: 1,
+              }}
+            />
+          </View>
         </SafeAreaView>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
@@ -279,7 +288,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   dateForm: {
-    flex: 2,
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     color: 'white',
@@ -293,7 +302,7 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: '#fff',
     borderColor: 'black',
-    width: 200,
+    width: 250,
     padding: 10,
     borderRadius: 4,
     fontSize: 20,
