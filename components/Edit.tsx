@@ -80,30 +80,50 @@ const Edit = ({ route, navigation }: EditProps) => {
       '更新完了',
       `「${last_name} ${first_name || ''}さん, 日付: ${dayjs(date).format(
         'YYYY-MM-DD'
-      )}, 関係: ${affiliation}, メモ: ${memo || ''}」 で登録しました。`
+      )}, 関係: ${affiliation}, メモ: ${memo || ''}」 で再登録しました。`
     )
     reset()
   }
   const onSubmitRemove = () => {
-    const db = openDatabase()
-    db.transaction((tx) => {
-      tx.executeSql(
-        'DELETE FROM items WHERE id=?',
-        [id],
-        (txObj, resultSet) => {
-          console.log('delete items success')
-        },
-        (txObj, error) => {
-          console.log('delete values failed', error)
-          return false
-        }
-      )
-    })
     Alert.alert(
-      '削除完了',
+      '削除確認',
       `「${last_name} ${first_name || ''}さん, 日付: ${dayjs(date).format(
         'YYYY-MM-DD'
-      )}, 関係: ${affiliation}, メモ: ${memo || ''}」 を削除しました。`
+      )}, 関係: ${affiliation}, メモ: ${
+        memo || ''
+      }」 を削除してよろしいですか？`,
+      [
+        {
+          text: '削除',
+          onPress: () => {
+            const db = openDatabase()
+            db.transaction((tx) => {
+              tx.executeSql(
+                'DELETE FROM items WHERE id=?',
+                [id],
+                (txObj, resultSet) => {
+                  console.log('delete items success')
+                },
+                (txObj, error) => {
+                  console.log('delete values failed', error)
+                  return false
+                }
+              )
+            })
+            Alert.alert(
+              '削除完了',
+              `「${last_name} ${first_name || ''}さん, 日付: ${dayjs(
+                date
+              ).format('YYYY-MM-DD')}, 関係: ${affiliation}, メモ: ${
+                memo || ''
+              }」 を削除しました。`
+            )
+          },
+        },
+        {
+          text: 'キャンセル',
+        },
+      ]
     )
   }
 
