@@ -4,7 +4,8 @@ import { NavigationContainer } from '@react-navigation/native'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import Icon from '@expo/vector-icons/MaterialIcons'
 
-import RegisterView from './components/RegisterView'
+import RegisterPeopleView from './components/RegisterPeopleView'
+// import RegisterWordView from './components/RegisterWordView'
 import ListView from './components/ListView'
 
 const Tab = createBottomTabNavigator()
@@ -43,7 +44,7 @@ const App = () => {
         }}>
         <Tab.Screen
           name='追加'
-          component={RegisterView}
+          component={RegisterPeopleView}
           options={{
             title: 'NaMemo',
             tabBarLabel: '追加',

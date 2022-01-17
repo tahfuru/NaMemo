@@ -17,18 +17,31 @@ import { useForm, Controller } from 'react-hook-form'
 import dayjs from 'dayjs'
 
 import { getUniqueStr } from '../modules/register'
-import { openDatabase } from '../modules/register'
+import {
+  openWordDatabase,
+  openTagTable,
+  openTagMapTable,
+} from '../modules/register'
+import TagInput from './TagInput'
 
 type FormData = {
-  first_name?: string
-  last_name?: string
-  date?: Date
-  affiliation?: string
+  word: string
+  description?: string
+  abbreviation?: string
   memo?: string
+  date?: Date
+  tags?: string[]
 }
 
-const RegisterView = () => {
-  const db = openDatabase()
+type TagData = {
+  tag: string
+}
+
+const RegisterWordView = () => {
+  const wdb = openWordDatabase()
+  const tt = openTagTable()
+  const tmt = openTagMapTable()
+
   const {
     control,
     handleSubmit,
@@ -37,42 +50,116 @@ const RegisterView = () => {
   } = useForm<FormData>()
   const [date, setDate] = useState(new Date())
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false)
+  // タグのPicker用のstate
+  const [selectedTag, setSelectedTag] = useState('java')
 
   const onSubmit = (data: FormData) => {
-    const { first_name, last_name, date, affiliation, memo } = data
-    const id = getUniqueStr()
-    console.log(id)
+    const { word, description, abbreviation, memo, date, tags } = data
+    const tagId: [string?] = []
+    const wordId = getUniqueStr('w')
+    const mapId = getUniqueStr('m')
+    console.log(wordId)
+    console.log(mapId)
 
-    db.transaction((tx) => {
+    // submitされたデータをword_databaseに登録する
+    wdb.transaction((tx) => {
       tx.executeSql(
-        'INSERT INTO items (id, first_name, last_name, date, affiliation, memo) VALUES (?, ?, ?, ?, ?, ?)',
+        'INSERT INTO words (id, word, description, abbreviation, memo, date) VALUES (?, ?, ?, ?, ?, ?)',
         [
-          id,
-          first_name,
-          last_name,
-          dayjs(date).format('YYYY-MM-DD'),
-          affiliation,
+          wordId,
+          word,
+          description,
+          abbreviation,
           memo,
+          dayjs(date).format('YYYY-MM-DD'),
         ],
         () => {
-          console.log('insert items success')
+          console.log('insert words success')
         },
         () => {
-          console.log('insert values failed')
+          console.log('insert words failed')
           return false
         }
       )
-      tx.executeSql('select * from items', [], (_, { rows }) =>
+      tx.executeSql('SELECT * FROM words', [], (_, { rows }) =>
         console.log(JSON.stringify(rows))
       )
     })
+
+    // tags配列から一つ一つのtagに対して
+    // tag_tableからtagのidを取得
+    for (const tag in tags) {
+      tt.transaction((tx) => {
+        tx.executeSql(
+          'SELECT id FROM tags WHERE tag = ?',
+          [tag],
+          (_, { rows }) => tagId.push(JSON.stringify(rows))
+        )
+      })
+    }
+    // TODO もしtagが存在しない場合は生成する
+    if (tagId.length == 0) {
+      for (const tag in tags) {
+        onTagSubmit({ tag })
+      }
+    }
+    console.log('tagId is ' + tagId)
+
+    // tag_map_tableにどのwordがどのtagを持っているかをidで組み合わせ管理
+    // word_idは同一スコープ内で宣言されている
+    // tagIdオブジェクトの持つ全てのtagidに対して
+    for (const tagid in tagId) {
+      tmt.transaction((tx) => {
+        tx.executeSql(
+          'INSERT INTO tag_map (id, word_id, tag_id) VALUES (?, ?, ?)',
+          [mapId, wordId, tagid],
+          () => {
+            console.log('insert words success')
+          },
+          () => {
+            console.log('insert words failed')
+            return false
+          }
+        )
+        tx.executeSql('SELECT * FROM tag_map', [], (_, { rows }) =>
+          console.log(JSON.stringify(rows))
+        )
+      })
+    }
+
     Alert.alert(
       '登録完了',
-      `「${last_name} ${first_name || ''}さん, 日付: ${dayjs(date).format(
-        'YYYY-MM-DD'
-      )}, 関係: ${affiliation}, メモ: ${memo || ''}」 で登録しました。`
+      `「${
+        word || abbreviation
+      } 略称: ${abbreviation}, 説明: ${description}, メモ: ${
+        memo || ''
+      }」 で登録しました。`
     )
     reset()
+  }
+
+  // tag追加されたら走る関数
+  const onTagSubmit = (data: TagData) => {
+    const { tag } = data
+    // tagIdはtで始まる
+    const id = getUniqueStr('t')
+
+    tt.transaction((tx) => {
+      tx.executeSql(
+        'INSERT INTO tags (id, tag) VALUES (?, ?)',
+        [id, tag],
+        () => {
+          console.log('insert tag success')
+        },
+        () => {
+          console.log('insert tag failed')
+          return false
+        }
+      )
+      tx.executeSql('SELECT * FROM items', [], (_, { rows }) =>
+        console.log(JSON.stringify(rows))
+      )
+    })
   }
 
   const showDatePicker = () => {
@@ -131,7 +218,7 @@ const RegisterView = () => {
             />
           </View>
           <View style={styles.form}>
-            <Text style={styles.formTitle}>　姓</Text>
+            <Text style={styles.formTitle}>登録用語</Text>
             <Controller
               control={control}
               rules={{
@@ -145,13 +232,12 @@ const RegisterView = () => {
                   value={value}
                 />
               )}
-              name='last_name'
+              name='word'
               defaultValue=''
             />
-            {errors.last_name && <Text>姓は必須です。</Text>}
           </View>
           <View style={styles.form}>
-            <Text style={styles.formTitle}>　名</Text>
+            <Text style={styles.formTitle}>　　説明</Text>
             <Controller
               control={control}
               rules={{
@@ -165,12 +251,13 @@ const RegisterView = () => {
                   value={value}
                 />
               )}
-              name='first_name'
+              name='description'
               defaultValue=''
             />
+            {errors.description && <Text>説明は必須です。</Text>}
           </View>
           <View style={styles.form}>
-            <Text style={styles.formTitle}>関係</Text>
+            <Text style={styles.formTitle}>略称</Text>
             <Controller
               control={control}
               rules={{
@@ -184,10 +271,21 @@ const RegisterView = () => {
                   value={value}
                 />
               )}
-              name='affiliation'
+              name='abbreviation'
               defaultValue=''
             />
-            {errors.affiliation && <Text>関係は必須です。</Text>}
+          </View>
+          <View style={styles.form}>
+            <Text style={styles.formTitle}>　　タグ</Text>
+            <Controller
+              control={control}
+              rules={{
+                required: false,
+              }}
+              render={({ field: { onChange, onBlur, value } }) => <TagInput />}
+              name='tags'
+              defaultValue={[]}
+            />
           </View>
           <View style={styles.form}>
             <Text style={styles.formTitle}>メモ</Text>
@@ -277,4 +375,4 @@ const styles = StyleSheet.create({
   },
 })
 
-export default RegisterView
+export default RegisterWordView
