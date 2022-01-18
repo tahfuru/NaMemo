@@ -64,7 +64,6 @@ const RegisterWordView = () => {
     console.log(mapId)
     console.log(tags)
     console.log(word)
-    return 0
 
     // submitされたデータをword_databaseに登録する
     wdb.transaction((tx) => {
