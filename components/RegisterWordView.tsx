@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
   SafeAreaView,
+  ScrollView,
 } from 'react-native'
 import { Button } from 'react-native-elements'
 import DateTimePickerModal from 'react-native-modal-datetime-picker'
@@ -48,10 +49,11 @@ const RegisterWordView = () => {
     reset,
     formState: { errors },
   } = useForm<FormData>()
+
   const [date, setDate] = useState(new Date())
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false)
   // タグのPicker用のstate
-  const [selectedTag, setSelectedTag] = useState('java')
+  const [selectedTag, setSelectedTag] = useState([])
 
   const onSubmit = (data: FormData) => {
     const { word, description, abbreviation, memo, date, tags } = data
@@ -60,6 +62,9 @@ const RegisterWordView = () => {
     const mapId = getUniqueStr('m')
     console.log(wordId)
     console.log(mapId)
+    console.log(tags)
+    console.log(word)
+    return 0
 
     // submitされたデータをword_databaseに登録する
     wdb.transaction((tx) => {
@@ -257,7 +262,7 @@ const RegisterWordView = () => {
             {errors.description && <Text>説明は必須です。</Text>}
           </View>
           <View style={styles.form}>
-            <Text style={styles.formTitle}>略称</Text>
+            <Text style={styles.formTitle}>　　略称</Text>
             <Controller
               control={control}
               rules={{
@@ -276,19 +281,26 @@ const RegisterWordView = () => {
             />
           </View>
           <View style={styles.form}>
-            <Text style={styles.formTitle}>　　タグ</Text>
-            <Controller
-              control={control}
-              rules={{
-                required: false,
-              }}
-              render={({ field: { onChange, onBlur, value } }) => <TagInput />}
-              name='tags'
-              defaultValue={[]}
-            />
+            <Text style={styles.formTitle}>　　　タグ</Text>
+            <ScrollView contentContainerStyle={styles.tagForm}>
+              <Controller
+                control={control}
+                rules={{
+                  required: false,
+                }}
+                render={({ field }) => (
+                  <TagInput
+                    tagArray={selectedTag}
+                    onChangeTags={(tags) => field.onChange(tags)}
+                  />
+                )}
+                name='tags'
+                defaultValue={[]}
+              />
+            </ScrollView>
           </View>
           <View style={styles.form}>
-            <Text style={styles.formTitle}>メモ</Text>
+            <Text style={styles.formTitle}>　　メモ</Text>
             <Controller
               control={control}
               rules={{
@@ -356,6 +368,9 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 4,
     fontSize: 20,
+  },
+  tagForm: {
+    maxHeight: 200,
   },
   form: {
     flex: 1,
