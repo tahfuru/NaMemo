@@ -1,30 +1,40 @@
-import React, { useState } from 'react'
-import { StyleSheet, Text, TouchableOpacity } from 'react-native'
+import React from 'react'
+import { StyleSheet, TextInput, TouchableOpacity } from 'react-native'
 import Tags from 'react-native-tags'
 
-const TagInput = () => (
-  <Tags
-    initialText='monkey'
-    textInputProps={{
-      placeholder: 'Any type of animal',
-    }}
-    initialTags={['dog', 'cat', 'chicken']}
-    onChangeTags={(tags) => console.log(tags)}
-    onTagPress={(index, tagLabel, event, deleted) =>
-      console.log(index, tagLabel, event, deleted ? 'deleted' : 'not deleted')
-    }
-    containerStyle={styles.container}
-    inputStyle={styles.input}
-    renderTag={({ tag, index, onPress, deleteTagOnPress, readonly }) => (
-      <TouchableOpacity
-        key={`${tag}-${index}`}
-        onPress={onPress}
-        style={styles.tag}>
-        <Text>{tag}</Text>
-      </TouchableOpacity>
-    )}
-  />
-)
+type TagInputProps = {
+  tagArray: string[]
+  onChangeTags: (tags: string[]) => void
+}
+
+const TagInput = ({ tagArray, onChangeTags }: TagInputProps) => {
+  return (
+    <Tags
+      initialText=''
+      textInputProps={{
+        placeholder: '空白区切りでタグ作成',
+      }}
+      initialTags={tagArray}
+      onChangeTags={(tags) => {
+        onChangeTags(tags)
+      }}
+      onTagPress={(index, tagLabel, event, deleted) =>
+        console.log(index, tagLabel, event, deleted ? 'deleted' : 'not deleted')
+      }
+      createTagOnString={[',', '、', ' ', '　']}
+      containerStyle={styles.container}
+      inputStyle={styles.input}
+      renderTag={({ tag, index, onPress, deleteTagOnPress, readonly }) => (
+        <TouchableOpacity
+          key={`${tag}-${index}`}
+          onPress={onPress}
+          style={styles.tag}>
+          <TextInput value={tag} />
+        </TouchableOpacity>
+      )}
+    />
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -35,7 +45,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
   },
   tag: {
-    backgroundColor: '#2A5353',
+    backgroundColor: '#FFBA08',
     borderRadius: 10,
     padding: 10,
     margin: 10,
