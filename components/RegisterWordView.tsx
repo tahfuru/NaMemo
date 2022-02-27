@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Alert,
   StyleSheet,
@@ -17,13 +17,14 @@ import DateTimePickerModal from 'react-native-modal-datetime-picker'
 import { useForm, Controller } from 'react-hook-form'
 import dayjs from 'dayjs'
 
-import { getUniqueStr } from '../modules/register'
+import { getUniqueStr, registerTag, registerWord } from '../modules/register'
 import {
   openWordDatabase,
   openTagTable,
   openTagMapTable,
 } from '../modules/register'
 import TagInput from './TagInput'
+import { GetTagListProps, TagList } from '../modules/types'
 
 type FormData = {
   word: string
@@ -36,6 +37,7 @@ type FormData = {
 
 type TagData = {
   tag: string
+  tt_id: string
 }
 
 const RegisterWordView = () => {
@@ -52,119 +54,102 @@ const RegisterWordView = () => {
 
   const [date, setDate] = useState(new Date())
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false)
+
+  const [wordId, setWordId] = useState<string>(getUniqueStr('w'))
+  const [registeredTag, setRegisteredTag] = useState<{
+    tag: string
+    wordId: string
+    tagId: string
+  }>({ tag: '', wordId: '', tagId: '' })
+  const [notRegisteredTag, setNotRegisteredTag] = useState('')
+  const [registerTagMap, setRegisterTagMap] = useState(false)
   // タグのPicker用のstate
   const [selectedTag, setSelectedTag] = useState([])
 
   const onSubmit = (data: FormData) => {
     const { word, description, abbreviation, memo, date, tags } = data
-    const tagId: [string?] = []
-    const wordId = getUniqueStr('w')
-    const mapId = getUniqueStr('m')
+    const tagId: string[] = []
+    console.log('onSubmit')
     console.log(wordId)
-    console.log(mapId)
     console.log(tags)
     console.log(word)
 
+    // TODO 2/15
+    // 登録したい内容はstateとしてviewで管理=> useEffectで連鎖もしたい
+    // register関数は各データベースにデータを登録することにのみ責任を負う
+
     // submitされたデータをword_databaseに登録する
-    wdb.transaction((tx) => {
-      tx.executeSql(
-        'INSERT INTO words (id, word, description, abbreviation, memo, date) VALUES (?, ?, ?, ?, ?, ?)',
-        [
-          wordId,
-          word,
-          description,
-          abbreviation,
-          memo,
-          dayjs(date).format('YYYY-MM-DD'),
-        ],
-        () => {
-          console.log('insert words success')
-        },
-        () => {
-          console.log('insert words failed')
-          return false
-        }
-      )
-      tx.executeSql('SELECT * FROM words', [], (_, { rows }) =>
-        console.log(JSON.stringify(rows))
-      )
-    })
+    registerWord({ wordId, word, description, abbreviation, memo, date, wdb })
 
-    // tags配列から一つ一つのtagに対して
-    // tag_tableからtagのidを取得
-    for (const tag in tags) {
-      tt.transaction((tx) => {
-        tx.executeSql(
-          'SELECT id FROM tags WHERE tag = ?',
-          [tag],
-          (_, { rows }) => tagId.push(JSON.stringify(rows))
-        )
-      })
+    // tagが入力されていたらtag_tableに登録
+    if (tags !== undefined) {
+      // 未登録のtagのみ取得
+      getTagList({ tags })
     }
-    // TODO もしtagが存在しない場合は生成する
-    if (tagId.length == 0) {
-      for (const tag in tags) {
-        onTagSubmit({ tag })
-      }
-    }
-    console.log('tagId is ' + tagId)
-
-    // tag_map_tableにどのwordがどのtagを持っているかをidで組み合わせ管理
-    // word_idは同一スコープ内で宣言されている
-    // tagIdオブジェクトの持つ全てのtagidに対して
-    for (const tagid in tagId) {
-      tmt.transaction((tx) => {
-        tx.executeSql(
-          'INSERT INTO tag_map (id, word_id, tag_id) VALUES (?, ?, ?)',
-          [mapId, wordId, tagid],
-          () => {
-            console.log('insert words success')
-          },
-          () => {
-            console.log('insert words failed')
-            return false
-          }
-        )
-        tx.executeSql('SELECT * FROM tag_map', [], (_, { rows }) =>
-          console.log(JSON.stringify(rows))
-        )
-      })
-    }
-
     Alert.alert(
       '登録完了',
       `「${
         word || abbreviation
-      } 略称: ${abbreviation}, 説明: ${description}, メモ: ${
-        memo || ''
-      }」 で登録しました。`
+      } 略称: ${abbreviation}, 説明: ${description}, タグ：${
+        tags || ''
+      } メモ: ${memo || ''}」 で登録しました。`
     )
     reset()
+    setWordId(getUniqueStr('w'))
   }
 
-  // tag追加されたら走る関数
-  const onTagSubmit = (data: TagData) => {
-    const { tag } = data
-    // tagIdはtで始まる
-    const id = getUniqueStr('t')
+  // 未登録のtagのリストを取得
+  const getTagList = (data: GetTagListProps) => {
+    const { tags } = data
+    console.log('getTagList: ' + tags)
+    for (const tag of tags) {
+      console.log('loop `' + tag + '` in getTagList')
+      tt.transaction((tx) => {
+        tx.executeSql(
+          'SELECT * FROM tags WHERE tag = ?',
+          [tag],
+          (_, { rows }) => {
+            console.log('number of results are ' + rows.length)
+            if (rows.length === 0) {
+              console.log(tag)
+              setNotRegisteredTag(tag)
+            } else {
+              console.log('tag *' + tag + '* exists in database')
+              setRegisteredTag({
+                tag: tag,
+                wordId: wordId,
+                tagId: rows.item(0).id,
+              })
+              console.log(rows.item(0))
+            }
+          }
+        )
+      })
+    }
+  }
 
-    tt.transaction((tx) => {
+  // add new tag to tag_table
+  useEffect(() => {
+    const tt_id = getUniqueStr('t')
+    registerTag({ tt_id, tag: notRegisteredTag, tt })
+    setRegisteredTag({ tag: notRegisteredTag, wordId: wordId, tagId: tt_id })
+  }, [notRegisteredTag])
+
+  // tagが追加された => set registerTagMap to true
+  useEffect(() => {
+    setRegisterTagMap(!registerTagMap)
+  }, [registeredTag])
+
+  // map word and tag into tag_map_table
+  useEffect(() => {
+    const mapId = getUniqueStr('m')
+    tmt.transaction((tx) => {
       tx.executeSql(
-        'INSERT INTO tags (id, tag) VALUES (?, ?)',
-        [id, tag],
-        () => {
-          console.log('insert tag success')
-        },
-        () => {
-          console.log('insert tag failed')
-          return false
-        }
-      )
-      tx.executeSql('SELECT * FROM items', [], (_, { rows }) =>
-        console.log(JSON.stringify(rows))
+        'INSERT INTO tag_map (id, word_id, tag_id) VALUES (?, ?, ?)',
+        [mapId, wordId, registeredTag.tagId]
       )
     })
-  }
+  }, [registerTagMap])
 
   const showDatePicker = () => {
     setDatePickerVisibility(true)
@@ -222,7 +207,7 @@ const RegisterWordView = () => {
             />
           </View>
           <View style={styles.form}>
-            <Text style={styles.formTitle}>登録用語</Text>
+            <Text style={styles.formTitle}>用語</Text>
             <Controller
               control={control}
               rules={{
@@ -241,7 +226,7 @@ const RegisterWordView = () => {
             />
           </View>
           <View style={styles.form}>
-            <Text style={styles.formTitle}>　　説明</Text>
+            <Text style={styles.formTitle}>説明</Text>
             <Controller
               control={control}
               rules={{
@@ -261,7 +246,7 @@ const RegisterWordView = () => {
             {errors.description && <Text>説明は必須です。</Text>}
           </View>
           <View style={styles.form}>
-            <Text style={styles.formTitle}>　　略称</Text>
+            <Text style={styles.formTitle}>略称</Text>
             <Controller
               control={control}
               rules={{
@@ -280,7 +265,7 @@ const RegisterWordView = () => {
             />
           </View>
           <View style={styles.form}>
-            <Text style={styles.formTitle}>　　　タグ</Text>
+            <Text style={styles.formTitle}>　　タグ</Text>
             <ScrollView contentContainerStyle={styles.tagForm}>
               <Controller
                 control={control}
@@ -299,7 +284,7 @@ const RegisterWordView = () => {
             </ScrollView>
           </View>
           <View style={styles.form}>
-            <Text style={styles.formTitle}>　　メモ</Text>
+            <Text style={styles.formTitle}>メモ</Text>
             <Controller
               control={control}
               rules={{

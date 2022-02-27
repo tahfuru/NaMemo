@@ -12,6 +12,8 @@ export type StackParamList = {
     date?: Date
     affiliation?: string
     memo?: string
+    word?: string
+    abbreviation?: string
   }
 }
 
@@ -63,3 +65,40 @@ export type ListViewScreenNavigationProp = NavigationTabProp<
   BottomTabParamList,
   'ListView'
 >
+
+export type registerWordProps = {
+  wordId: string
+  word: string
+  description?: string
+  abbreviation?: string
+  memo?: string
+  date?: Date
+  wdb:
+    | SQLite.WebSQLDatabase
+    | {
+        transaction: () => {
+          executeSql: () => void
+        }
+      }
+}
+
+export type RegisterTagProps = {
+  tt_id: string
+  tag: string
+  tt:
+    | SQLite.WebSQLDatabase
+    | {
+        transaction: () => {
+          executeSql: () => void
+        }
+      }
+}
+
+export type GetTagListProps = {
+  tags: string[]
+}
+
+export type TagList = {
+  registered: Array<{ tt_id: string; tag: string }>
+  notRegistered: Array<{ tag: string }>
+}

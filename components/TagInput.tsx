@@ -12,7 +12,7 @@ const TagInput = ({ tagArray, onChangeTags }: TagInputProps) => {
     <Tags
       initialText=''
       textInputProps={{
-        placeholder: 'Any tag',
+        placeholder: '空白区切りでタグ作成',
       }}
       initialTags={tagArray}
       onChangeTags={(tags) => {
@@ -21,6 +21,7 @@ const TagInput = ({ tagArray, onChangeTags }: TagInputProps) => {
       onTagPress={(index, tagLabel, event, deleted) =>
         console.log(index, tagLabel, event, deleted ? 'deleted' : 'not deleted')
       }
+      createTagOnString={[',', '、', ' ', '　']}
       containerStyle={styles.container}
       inputStyle={styles.input}
       renderTag={({ tag, index, onPress, deleteTagOnPress, readonly }) => (
