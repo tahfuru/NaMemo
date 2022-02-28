@@ -61,7 +61,7 @@ const RegisterWordView = () => {
     wordId: string
     tagId: string
   }>({ tag: '', wordId: '', tagId: '' })
-  const [notRegisteredTag, setNotRegisteredTag] = useState('')
+  const [notRegisteredTag, setNotRegisteredTag] = useState<string>('')
   const [registerTagMap, setRegisterTagMap] = useState(false)
   // タグのPicker用のstate
   const [selectedTag, setSelectedTag] = useState([])
@@ -69,14 +69,6 @@ const RegisterWordView = () => {
   const onSubmit = (data: FormData) => {
     const { word, description, abbreviation, memo, date, tags } = data
     const tagId: string[] = []
-    console.log('onSubmit')
-    console.log(wordId)
-    console.log(tags)
-    console.log(word)
-
-    // TODO 2/15
-    // 登録したい内容はstateとしてviewで管理=> useEffectで連鎖もしたい
-    // register関数は各データベースにデータを登録することにのみ責任を負う
 
     // submitされたデータをword_databaseに登録する
     registerWord({ wordId, word, description, abbreviation, memo, date, wdb })
@@ -90,7 +82,7 @@ const RegisterWordView = () => {
       '登録完了',
       `「${
         word || abbreviation
-      } 略称: ${abbreviation}, 説明: ${description}, タグ：${
+      } 略称: ${abbreviation}, 説明: ${description}, タグ: ${
         tags || ''
       } メモ: ${memo || ''}」 で登録しました。`
     )
@@ -101,26 +93,22 @@ const RegisterWordView = () => {
   // 未登録のtagのリストを取得
   const getTagList = (data: GetTagListProps) => {
     const { tags } = data
-    console.log('getTagList: ' + tags)
+
     for (const tag of tags) {
-      console.log('loop `' + tag + '` in getTagList')
       tt.transaction((tx) => {
         tx.executeSql(
           'SELECT * FROM tags WHERE tag = ?',
           [tag],
           (_, { rows }) => {
-            console.log('number of results are ' + rows.length)
             if (rows.length === 0) {
               console.log(tag)
               setNotRegisteredTag(tag)
             } else {
-              console.log('tag *' + tag + '* exists in database')
               setRegisteredTag({
                 tag: tag,
                 wordId: wordId,
                 tagId: rows.item(0).id,
               })
-              console.log(rows.item(0))
             }
           }
         )

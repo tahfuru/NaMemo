@@ -14,6 +14,7 @@ export type StackParamList = {
     memo?: string
     word?: string
     abbreviation?: string
+    tags?: string[]
   }
 }
 

@@ -172,7 +172,7 @@ const List = () => {
             [wordList[i].id],
             (_, tmtResultSet) => {
               console.log('tmtResultSet')
-              console.log(tmtResultSet)
+              console.log(tmtResultSet.rows)
             },
             () => {
               console.log('search tagID failed (tag_map_table)')
