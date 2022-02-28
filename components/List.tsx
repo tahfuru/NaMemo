@@ -164,7 +164,8 @@ const List = () => {
     if (wordList !== undefined) {
       console.log('wordlist')
       console.log(wordList)
-      // 検索ヒットした全ての用語に対してタグを取得するためにtag_map_tableから登録されているtagIDを取得
+      // 検索ヒットした全ての用語に対してタグを取得する
+      // まずtag_map_tableから登録されているtagIDを取得
       for (let i = 0; i < wordList.length; i++) {
         tmt.transaction((tmt_tx) => {
           tmt_tx.executeSql(
@@ -180,6 +181,7 @@ const List = () => {
             }
           )
         })
+        // tag_tableからtagIDを用いてtagの取得
       }
     }
   }, [wordList])
