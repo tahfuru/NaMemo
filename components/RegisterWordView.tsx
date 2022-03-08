@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import {
   Alert,
   StyleSheet,
@@ -56,14 +56,12 @@ const RegisterWordView = () => {
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false)
 
   const [wordId, setWordId] = useState<string>(getUniqueStr('w'))
-  const [resetFlag, setResetFlag] = useState(false)
   const [registeredTag, setRegisteredTag] = useState<{
     tag: string
     wordId: string
     tagId: string
   }>({ tag: '', wordId: '', tagId: '' })
   const [notRegisteredTag, setNotRegisteredTag] = useState<string>('')
-  const [registerTagMap, setRegisterTagMap] = useState(false)
   // タグのPicker用のstate
   const [selectedTag, setSelectedTag] = useState([])
 
@@ -78,8 +76,6 @@ const RegisterWordView = () => {
     if (tags !== undefined) {
       // 未登録のtagのみ取得
       getTagList({ tags })
-    } else {
-      setResetFlag(!resetFlag)
     }
     Alert.alert(
       '登録完了',
@@ -90,37 +86,38 @@ const RegisterWordView = () => {
       } メモ: ${memo || ''}」 で登録しました。`
     )
     reset()
+    setWordId(getUniqueStr('w'))
   }
 
   // 未登録のtagのリストを取得
   const getTagList = (data: GetTagListProps) => {
     const { tags } = data
 
-    if (tags.length > 0) {
-      for (const tag of tags) {
-        tt.transaction((tx) => {
-          tx.executeSql(
-            'SELECT * FROM tags WHERE tag = ?',
-            [tag],
-            (_, { rows }) => {
-              if (rows.length === 0) {
-                setNotRegisteredTag(tag)
-              } else {
-                setRegisteredTag({
-                  tag: tag,
-                  wordId: wordId,
-                  tagId: rows.item(0).id,
-                })
-              }
+    for (const tag of tags) {
+      tt.transaction((tx) => {
+        tx.executeSql(
+          'SELECT * FROM tags WHERE tag = ?',
+          [tag],
+          (_, { rows }) => {
+            if (rows.length === 0) {
+              console.log(tag)
+              setNotRegisteredTag(tag)
+            } else {
+              setRegisteredTag({
+                tag: tag,
+                wordId: wordId,
+                tagId: rows.item(0).id,
+              })
             }
-          )
-        })
-      }
+          }
+        )
+      })
     }
   }
 
   // add new tag to tag_table
   useEffect(() => {
+    // 初回レンダー時でなければ
     if (notRegisteredTag !== '') {
       const tt_id = getUniqueStr('t')
       registerTag({ tt_id, tag: notRegisteredTag, tt })
@@ -128,16 +125,10 @@ const RegisterWordView = () => {
     }
   }, [notRegisteredTag])
 
-  // tagが追加された => set registerTagMap to true
-  useEffect(() => {
-    if (registeredTag !== { tag: '', wordId: '', tagId: '' }) {
-      setRegisterTagMap(!registerTagMap)
-    }
-  }, [registeredTag])
-
   // map word and tag into tag_map_table
   useEffect(() => {
-    if (registeredTag.tagId !== '') {
+    // 初回レンダー時でなければ
+    if (registeredTag.tag !== '') {
       const mapId = getUniqueStr('m')
       tmt.transaction((tx) => {
         tx.executeSql(
@@ -145,14 +136,8 @@ const RegisterWordView = () => {
           [mapId, wordId, registeredTag.tagId]
         )
       })
-      setResetFlag(!resetFlag)
     }
-  }, [registerTagMap])
-
-  // 処理が終了したらwordIDをリセット
-  useEffect(() => {
-    setWordId(getUniqueStr('w'))
-  }, [resetFlag])
+  }, [registeredTag])
 
   const showDatePicker = () => {
     setDatePickerVisibility(true)
