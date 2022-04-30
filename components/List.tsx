@@ -14,12 +14,7 @@ import { useForm, Controller } from 'react-hook-form'
 import Icon from '@expo/vector-icons/MaterialIcons'
 
 import { DetailsScreenNavigationProp } from '../modules/types'
-import {
-  openDatabase,
-  openWordDatabase,
-  openTagMapTable,
-  openTagTable,
-} from '../modules/register'
+import { openDatabase } from '../modules/register'
 
 type KeywordData = {
   keyword: string
@@ -48,6 +43,24 @@ type TagItemProps = {
   tag: string
 }
 
+type TagMapItemProps = {
+  tagId: string
+  wordId: string
+}
+
+type WordAndTagProps = {
+  wordId: string
+  word: string
+  tags?: {
+    tagId: string
+    tag: string
+  }
+  description?: string
+  abbreviation?: string
+  memo?: string
+  date?: Date
+}
+
 type KeywordProps = {
   isModeSelected: boolean
   keyword: string
@@ -57,16 +70,16 @@ type KeywordProps = {
 const modeList = ['名前', '用語', 'タグ']
 
 // データベース
-const ndb = openDatabase()
-const wdb = openWordDatabase()
-const tmt = openTagMapTable()
-const tt = openTagTable()
+const db = openDatabase()
 
 const List = () => {
   const { control, handleSubmit } = useForm<KeywordData>()
   const [nameList, setNameList] = useState<NameItemProps[]>()
   const [wordList, setWordList] = useState<WordItemProps[]>()
   const [tagList, setTagList] = useState<TagItemProps[]>()
+  const [tagMapList, setTagMapList] = useState<TagMapItemProps[]>()
+  const [wordAndTagList, setWordAndTagList] = useState<WordAndTagProps[]>()
+
   const [empty, setEmpty] = useState(true)
   const [mode, setMode] = useState<number>(0)
   const [modeName, setModeToName] = useState<KeywordProps>({
@@ -103,8 +116,8 @@ const List = () => {
   // 人物モードの検索処理
   useEffect(() => {
     const keyword = modeName.keyword
-    ndb.transaction((tx) => {
-      tx.executeSql(
+    db.transaction((name_tx) => {
+      name_tx.executeSql(
         'SELECT * FROM items WHERE (`first_name` LIKE ? || "%" OR `last_name` LIKE ? || "%" OR `date` LIKE ? || "%" OR `affiliation` LIKE ? || "%" OR `memo` LIKE ? || "%")',
         [keyword, keyword, keyword, keyword, keyword],
         (_, resultSet) => {
@@ -134,8 +147,8 @@ const List = () => {
     const keyword = modeWord.keyword
 
     // tag_tableから用語の検索
-    wdb.transaction((tx) => {
-      tx.executeSql(
+    db.transaction((word_tx) => {
+      word_tx.executeSql(
         'SELECT * FROM words WHERE (`word` LIKE ? || "%" OR `description` LIKE ? || "%" OR `abbreviation` LIKE ? || "%" OR `memo` LIKE ? || "%" OR `date` LIKE ? || "%")',
         [keyword, keyword, keyword, keyword, keyword],
         (_, resultSet) => {
@@ -167,13 +180,21 @@ const List = () => {
       // 検索ヒットした全ての用語に対してタグを取得する
       // まずtag_map_tableから登録されているtagIDを取得
       for (let i = 0; i < wordList.length; i++) {
-        tmt.transaction((tmt_tx) => {
+        const temp: TagMapItemProps[] = []
+        db.transaction((tmt_tx) => {
           tmt_tx.executeSql(
             'SELECT * FROM tag_map WHERE (`word_id` LIKE ? || "%")',
             [wordList[i].id],
             (_, tmtResultSet) => {
               console.log('tmtResultSet')
-              console.log(tmtResultSet.rows)
+              for (let j = 0; j < tmtResultSet.rows.length; j++) {
+                console.log(tmtResultSet.rows.item(j))
+                temp.push({
+                  tagId: tmtResultSet.rows.item(j).tag_id,
+                  wordId: tmtResultSet.rows.item(j).word_id,
+                })
+              }
+              setTagMapList(temp)
             },
             () => {
               console.log('search tagID failed (tag_map_table)')
@@ -181,10 +202,34 @@ const List = () => {
             }
           )
         })
-        // tag_tableからtagIDを用いてtagの取得
+        console.log(temp)
       }
     }
   }, [wordList])
+
+  useEffect(() => {
+    console.log('tagMapList')
+    if (tagMapList !== undefined) {
+      // tag_tableからtagIDを用いてtagの取得
+      for (const tml of tagMapList) {
+        console.log(tml.tagId)
+        db.transaction((tt_tx) => {
+          tt_tx.executeSql(
+            'SELECT * FROM tags WHERE (`id` LIKE ? || "%")',
+            [tml.tagId],
+            (_, ttResultSet) => {
+              console.log('ttResultSet')
+              console.log(ttResultSet.rows.item(0))
+            },
+            () => {
+              console.log('search tag failed (tag_table)')
+              return false
+            }
+          )
+        })
+      }
+    }
+  }, [tagMapList])
 
   // タグモードの検索処理
   useEffect(() => {
@@ -192,7 +237,7 @@ const List = () => {
     const keyword = modeTag.keyword
 
     // tag名からtagIDを取得
-    tt.transaction((tt_tx) => {
+    db.transaction((tt_tx) => {
       tt_tx.executeSql(
         'SELECT `id` FROM tags WHERE (`tag` LIKE ? || "%")',
         [keyword],
@@ -206,7 +251,7 @@ const List = () => {
       )
     })
 
-    tmt.transaction((tmt_tx) => {
+    db.transaction((tmt_tx) => {
       tmt_tx.executeSql(
         'SELECT `word_id` FROM tag_map WHERE (`tag_id` LIKE ? || "%")',
         [keyword]

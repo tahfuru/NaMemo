@@ -17,14 +17,14 @@ import DateTimePickerModal from 'react-native-modal-datetime-picker'
 import { useForm, Controller } from 'react-hook-form'
 import dayjs from 'dayjs'
 
-import { getUniqueStr, registerTag, registerWord } from '../modules/register'
 import {
-  openWordDatabase,
-  openTagTable,
-  openTagMapTable,
+  getUniqueStr,
+  registerTag,
+  registerTagMap,
+  registerWord,
 } from '../modules/register'
+import { openDatabase } from '../modules/register'
 import TagInput from './TagInput'
-import { GetTagListProps, TagList } from '../modules/types'
 
 type FormData = {
   word: string
@@ -35,15 +35,8 @@ type FormData = {
   tags?: string[]
 }
 
-type TagData = {
-  tag: string
-  tt_id: string
-}
-
 const RegisterWordView = () => {
-  const wdb = openWordDatabase()
-  const tt = openTagTable()
-  const tmt = openTagMapTable()
+  const db = openDatabase()
 
   const {
     control,
@@ -70,7 +63,7 @@ const RegisterWordView = () => {
     const tagId: string[] = []
 
     // submitされたデータをword_databaseに登録する
-    registerWord({ wordId, word, description, abbreviation, memo, date, wdb })
+    registerWord({ wordId, word, description, abbreviation, memo, date, db })
 
     // tagが入力されていたらtag_tableに登録
     if (tags !== undefined) {
@@ -90,12 +83,12 @@ const RegisterWordView = () => {
   }
 
   // 未登録のtagのリストを取得
-  const getTagList = (data: GetTagListProps) => {
+  const getTagList = (data: { tags: string[] }) => {
     const { tags } = data
 
     for (const tag of tags) {
-      tt.transaction((tx) => {
-        tx.executeSql(
+      db.transaction((tt_tx) => {
+        tt_tx.executeSql(
           'SELECT * FROM tags WHERE tag = ?',
           [tag],
           (_, { rows }) => {
@@ -119,9 +112,9 @@ const RegisterWordView = () => {
   useEffect(() => {
     // 初回レンダー時でなければ
     if (notRegisteredTag !== '') {
-      const tt_id = getUniqueStr('t')
-      registerTag({ tt_id, tag: notRegisteredTag, tt })
-      setRegisteredTag({ tag: notRegisteredTag, wordId: wordId, tagId: tt_id })
+      const ttId = getUniqueStr('t')
+      registerTag({ tt_id: ttId, tag: notRegisteredTag, db: db })
+      setRegisteredTag({ tag: notRegisteredTag, wordId: wordId, tagId: ttId })
     }
   }, [notRegisteredTag])
 
@@ -130,11 +123,11 @@ const RegisterWordView = () => {
     // 初回レンダー時でなければ
     if (registeredTag.tag !== '') {
       const mapId = getUniqueStr('m')
-      tmt.transaction((tx) => {
-        tx.executeSql(
-          'INSERT INTO tag_map (id, word_id, tag_id) VALUES (?, ?, ?)',
-          [mapId, wordId, registeredTag.tagId]
-        )
+      registerTagMap({
+        map_id: mapId,
+        word_id: wordId,
+        tag_id: registeredTag.tagId,
+        db: db,
       })
     }
   }, [registeredTag])

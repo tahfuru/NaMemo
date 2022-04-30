@@ -15,6 +15,7 @@ export type StackParamList = {
     word?: string
     abbreviation?: string
     tags?: string[]
+    description?: string
   }
 }
 
@@ -67,14 +68,14 @@ export type ListViewScreenNavigationProp = NavigationTabProp<
   'ListView'
 >
 
-export type registerWordProps = {
+export type RegisterWordProps = {
   wordId: string
   word: string
   description?: string
   abbreviation?: string
   memo?: string
   date?: Date
-  wdb:
+  db:
     | SQLite.WebSQLDatabase
     | {
         transaction: () => {
@@ -86,7 +87,7 @@ export type registerWordProps = {
 export type RegisterTagProps = {
   tt_id: string
   tag: string
-  tt:
+  db:
     | SQLite.WebSQLDatabase
     | {
         transaction: () => {
@@ -95,11 +96,15 @@ export type RegisterTagProps = {
       }
 }
 
-export type GetTagListProps = {
-  tags: string[]
-}
-
-export type TagList = {
-  registered: Array<{ tt_id: string; tag: string }>
-  notRegistered: Array<{ tag: string }>
+export type RegisterTagMapProps = {
+  map_id: string
+  word_id: string
+  tag_id: string
+  db:
+    | SQLite.WebSQLDatabase
+    | {
+        transaction: () => {
+          executeSql: () => void
+        }
+      }
 }
